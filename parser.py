@@ -1,4 +1,4 @@
-# parser.py
+# parser.py 
 import logging
 import os
 import re
@@ -11,8 +11,8 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
-INPUT_PDF = Path("demo.pdf")
-OUT_DIR = Path("scratch")
+INPUT_PDF = Path("imagetable.pdf")
+OUT_DIR = Path("imagetable")
 IMAGES_SUBFOLDER = "images"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_RESOLUTION_SCALE = 2.0
