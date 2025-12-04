@@ -12,10 +12,11 @@ uv init
 
 ```bash   
 uv add langchain langchain-openai langchain-core python-dotenv pymupdf pillow
+
 ```
 
 **Execution:**
 
 ```bash   
-uv run validate_images.py   
+uv run python main.py
 
