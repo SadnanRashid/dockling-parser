@@ -1,0 +1,53 @@
+{
+  "file_name": "resume.pdf",
+  "classified_as": "resume",
+  "confidence": 0.912,
+  "threshold_met": true,
+  "all_scores": {
+    "invoice": 0.161,
+    "contract": 0.2,
+    "report": 0.508,
+    "form": 0.47,
+    "policy": 0.2,
+    "resume": 0.912,
+    "proposal": 0.133,
+    "letter": 0.436
+  },
+  "features": {
+    "total_pages": 2,
+    "total_text_length": 4194,
+    "has_tables": false,
+    "table_count": 0,
+    "has_images": false,
+    "image_count": 0,
+    "keywords_found": {
+      "vat": 1,
+      "date": 1,
+      "skills": 6,
+      "customer": 4,
+      "career": 3,
+      "results": 1,
+      "contact": 2,
+      "objective": 2,
+      "experience": 5,
+      "form": 2,
+      "qualifications": 1,
+      "subject": 2,
+      "name": 2,
+      "address": 2,
+      "achievements": 1,
+      "responsibilities": 1,
+      "information": 1,
+      "education": 2
+    },
+    "layout_patterns": {
+      "has_header": false,
+      "has_sections": false,
+      "has_signature": false,
+      "has_lists": true,
+      "has_table": false
+    },
+    "text_density": 2097.0
+  },
+  "timestamp": null
+}

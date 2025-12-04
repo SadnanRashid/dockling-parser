@@ -1,0 +1,167 @@
+{
+  "invoice": {
+    "min_score": 0.65,
+    "required_keywords": ["invoice", "bill"],
+    "optional_keywords": [
+      "payment", "due date", "tax", "subtotal", "customer", 
+      "invoice number", "billing", "charges", "vat", "gst", 
+      "amount", "total", "balance"
+    ],
+    "layout_requirements": {
+      "has_table": true
+    },
+    "page_range": [1, 5],
+    "table_required": true,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.6,
+      "layout": 0.2,
+      "structure": 0.2
+    }
+  },
+
+  "contract": {
+    "min_score": 0.6,
+    "required_keywords": ["agreement", "contract"],
+    "optional_keywords": [
+      "party", "parties", "whereas", "signature", "effective date", 
+      "obligations", "termination", "jurisdiction", "governing law", 
+      "warranties", "indemnification", "confidentiality", "terms"
+    ],
+    "layout_requirements": {
+      "has_sections": true
+    },
+    "page_range": [2, 100],
+    "table_required": false,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.6,
+      "layout": 0.2,
+      "structure": 0.2
+    }
+  },
+
+  "report": {
+    "min_score": 0.35,
+    "required_keywords": ["report"],
+    "optional_keywords": [
+      "analysis", "findings", "conclusion", "executive summary",
+      "recommendations", "methodology", "introduction", "results",
+      "data", "summary", "overview", "performance", "metrics",
+      "statistics", "evaluation", "assessment", "insights", "appendix"
+    ],
+    "layout_requirements": {},
+    "page_range": [1, 200],
+    "table_required": false,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.5,
+      "layout": 0.2,
+      "structure": 0.3
+    }
+  },
+
+  "form": {
+    "min_score": 0.5,
+    "required_keywords": ["form", "application"],
+    "optional_keywords": [
+      "submit", "applicant", "complete", "fields", "required",
+      "signature", "date", "print", "please provide", "information",
+      "name", "address", "contact", "consent", "authorization"
+    ],
+    "layout_requirements": {
+      "has_sections": true
+    },
+    "page_range": [1, 15],
+    "table_required": false,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.6,
+      "layout": 0.2,
+      "structure": 0.2
+    }
+  },
+
+  "policy": {
+    "min_score": 0.55,
+    "required_keywords": ["policy", "policies"],
+    "optional_keywords": [
+      "procedures", "guidelines", "compliance", "regulations",
+      "standards", "requirements", "implementation", "enforcement",
+      "violation", "scope", "purpose", "definitions", "effective date",
+      "privacy", "security", "confidentiality", "terms and conditions"
+    ],
+    "layout_requirements": {
+      "has_sections": true
+    },
+    "page_range": [2, 50],
+    "table_required": false,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.6,
+      "layout": 0.2,
+      "structure": 0.2
+    }
+  },
+
+  "resume": {
+    "min_score": 0.6,
+    "required_keywords": ["experience", "education", "skills"],
+    "optional_keywords": [
+      "objective", "summary", "projects", "certifications",
+      "work history", "employment", "qualifications", "achievements",
+      "references", "languages", "responsibilities", "career"
+    ],
+    "layout_requirements": {
+      "has_lists": true
+    },
+    "page_range": [1, 4],
+    "table_required": false,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.5,
+      "layout": 0.3,
+      "structure": 0.2
+    }
+  },
+
+  "proposal": {
+    "min_score": 0.55,
+    "required_keywords": ["proposal"],
+    "optional_keywords": [
+      "objectives", "scope", "budget", "timeline", "deliverables", 
+      "milestones", "requirements", "benefits", "approach", "solution", 
+      "pricing", "acceptance", "project", "services", "implementation"
+    ],
+    "layout_requirements": {
+      "has_sections": true
+    },
+    "page_range": [3, 50],
+    "table_required": false,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.5,
+      "layout": 0.3,
+      "structure": 0.2
+    }
+  },
+
+  "letter": {
+    "min_score": 0.5,
+    "required_keywords": ["dear"],
+    "optional_keywords": [
+      "sincerely", "regards", "to whom it may concern", "date", 
+      "subject", "attention", "enclosed", "yours truly", 
+      "respectfully", "correspondence"
+    ],
+    "layout_requirements": {},
+    "page_range": [1, 5],
+    "table_required": false,
+    "image_required": false,
+    "weights": {
+      "keywords": 0.6,
+      "layout": 0.2,
+      "structure": 0.2
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "file_name": "invoice.pdf",
+  "classified_as": "invoice",
+  "confidence": 0.693,
+  "threshold_met": true,
+  "all_scores": {
+    "invoice": 0.693,
+    "contract": 0.214,
+    "report": 0.5,
+    "form": 0.224,
+    "policy": 0.2,
+    "resume": 0.2,
+    "proposal": 0.2,
+    "letter": 0.418
+  },
+  "features": {
+    "total_pages": 3,
+    "total_text_length": 7958,
+    "has_tables": true,
+    "table_count": 5,
+    "has_images": true,
+    "image_count": 3,
+    "keywords_found": {
+      "name": 1,
+      "vat": 6,
+      "amount": 6,
+      "customer": 1,
+      "date": 1,
+      "terms": 1,
+      "total": 5,
+      "invoice": 9,
+      "charges": 1,
+      "payment": 2
+    },
+    "layout_patterns": {
+      "has_header": false,
+      "has_sections": false,
+      "has_signature": false,
+      "has_lists": false,
+      "has_table": true
+    },
+    "text_density": 2652.6666666666665
+  },
+  "timestamp": null
+}
