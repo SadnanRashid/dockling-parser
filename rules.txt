@@ -1,0 +1,7 @@
+DOCUMENT VALIDATION RULES:
+
+- Must be a professional/official document
+- Text should be clearly readable
+- Document should not be completely blank or corrupted
+
+Pass Criteria: If document appears to be a legitimate business/official document = PASS, otherwise FAIL

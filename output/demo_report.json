@@ -1,0 +1,156 @@
+{
+  "pdf_file": "demo.pdf",
+  "total_pages": 3,
+  "overall_classification": {
+    "document_type": [
+      [
+        "INVOICE",
+        3
+      ]
+    ],
+    "type_distribution": {
+      "INVOICE": 3
+    }
+  },
+  "rules_used": "DOCUMENT VALIDATION RULES:\n\n- Must be a professional/official document\n- Text should be clearly readable\n- Document should not be completely blank or corrupted\n\nPass Criteria: If document appears to be a legitimate business/official document = PASS, otherwise FAIL",
+  "page_results": [
+    {
+      "document_classification": {
+        "primary_type": "INVOICE",
+        "confidence": "HIGH",
+        "reasoning": "The document contains keywords such as 'Invoice', 'VAT', and 'Total Amount'. It has a table layout with amounts and invoice details, which is typical for invoices."
+      },
+      "validation": {
+        "status": "PASS",
+        "reasoning": "The document is a professional invoice with clearly readable text and structured information, meeting the validation rules."
+      },
+      "extracted_data": {
+        "text_content": [
+          "Invoice WMACCESS Internet",
+          "VAT No. DE199378386",
+          "Invoice No 123100401",
+          "Customer No 12345",
+          "Invoice Period 01.02.2024 - 29.02.2024",
+          "Date 1. März 2024",
+          "Total 381,12 €",
+          "Gross Amount incl. VAT 453,53 €"
+        ],
+        "key_fields": {
+          "document_number": "123100401",
+          "date": "1. März 2024",
+          "company_name": "CPB Software (Germany) GmbH",
+          "amounts": [
+            "381,12 €",
+            "453,53 €"
+          ],
+          "parties_involved": [
+            "Musterkunde AG",
+            "Mr. John Doe"
+          ]
+        },
+        "detected_elements": [
+          "tables",
+          "logos"
+        ]
+      },
+      "page_summary": "This page is an invoice from CPB Software (Germany) GmbH to Musterkunde AG, detailing services and transaction fees for the period of February 2024.",
+      "page_number": 1,
+      "image_file": "demo_page_1.png"
+    },
+    {
+      "document_classification": {
+        "primary_type": "INVOICE",
+        "confidence": "HIGH",
+        "reasoning": "The document contains the title 'Invoice Details', includes a period of service, and has a structured table with amounts and account details, which are typical features of an invoice."
+      },
+      "validation": {
+        "status": "PASS",
+        "reasoning": "The document is a professional invoice with clearly readable text and structured data, meeting the validation rules."
+      },
+      "extracted_data": {
+        "text_content": [
+          "Invoice Details",
+          "Period: 01.02.2024 to 29.02.2024",
+          "Unit: Musterkunde AG",
+          "12345",
+          "Request sections: T1, T2, T3, T4, T5, T6, G1, G2, G3, G4, G5, G6",
+          "Amount in Euro: 0.58, 0.70, 1.50, 0.50, 0.80, 1.80, 0.30, 0.30, 0.40, 0.40, 0.30, 0.30",
+          "user-account-1: 154.30 €",
+          "user-account-2: 96.82 €",
+          "Transaction Fee Seg",
+          "Queries in Total: 14, 0, 162, 0, 0, 0, 0, 0, 0, 0, 0, 0",
+          "Total in Euro: 8.12 €, 0.00 €, 243.00 €, 0.00 €, 0.00 €, 0.00 €, 0.00 €, 0.00 €, 0.00 €, 0.00 €, 0.00 €, 0.00 €, 251.12 €",
+          "The explanation of the query fee categories (T1 to T6 and G1 to G6) can be found on our website: https://www.wmaccess.com/abfragekategorien"
+        ],
+        "key_fields": {
+          "document_number": "12345",
+          "date": "01.02.2024 to 29.02.2024",
+          "company_name": "Musterkunde AG",
+          "amounts": [
+            "154.30 €",
+            "96.82 €",
+            "251.12 €"
+          ],
+          "parties_involved": [
+            "Musterkunde AG"
+          ]
+        },
+        "detected_elements": [
+          "tables",
+          "logos"
+        ]
+      },
+      "page_summary": "This page contains invoice details for the period from 01.02.2024 to 29.02.2024 for Musterkunde AG, including account charges and total amounts.",
+      "page_number": 2,
+      "image_file": "demo_page_2.png"
+    },
+    {
+      "document_classification": {
+        "primary_type": "INVOICE",
+        "confidence": "HIGH",
+        "reasoning": "The document contains keywords such as 'Invoice Details' and 'Query Reference'. It includes tables with amounts and a period, which are typical features of an invoice."
+      },
+      "validation": {
+        "status": "PASS",
+        "reasoning": "The document is a professional invoice with clearly readable text and structured data, meeting the validation rules."
+      },
+      "extracted_data": {
+        "text_content": [
+          "Invoice Details for wmView Query Reference",
+          "Period: 01.02.2024 to 29.02.2024",
+          "Unit: Musterkunde AG",
+          "Query Reference",
+          "Price for each Query in Euro"
+        ],
+        "key_fields": {
+          "document_number": "12345",
+          "date": "01.02.2024 to 29.02.2024",
+          "company_name": "Musterkunde AG",
+          "amounts": [
+            "15,82 €",
+            "18,00 €",
+            "6,00 €",
+            "56,90 €",
+            "28,50 €",
+            "11,08 €",
+            "10,16 €",
+            "16,50 €",
+            "22,50 €",
+            "7,50 €",
+            "35,08 €",
+            "6,58 €",
+            "16,50 €"
+          ],
+          "parties_involved": []
+        },
+        "detected_elements": [
+          "tables",
+          "logos"
+        ]
+      },
+      "page_summary": "This page contains invoice details for a specific query reference, including a list of queries, their respective counts, and associated costs for the period from 01.02.2024 to 29.02.2024.",
+      "page_number": 3,
+      "image_file": "demo_page_3.png"
+    }
+  ]
+}
