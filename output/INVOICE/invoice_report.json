@@ -1,0 +1,218 @@
+{
+  "pdf_file": "invoice.pdf",
+  "document_classification": {
+    "document_type": "INVOICE",
+    "confidence": "HIGH",
+    "reasoning": "The document contains typical elements of an invoice such as invoice number, customer number, invoice period, service descriptions, amounts, and payment terms. All three pages are consistent with the structure and content of an invoice."
+  },
+  "validation": {
+    "status": "PASS",
+    "reasoning": "The document is a professional and official invoice. The text is clearly readable, and the document is neither blank nor corrupted."
+  },
+  "document_summary": "This document is an invoice from CPB Software (Germany) GmbH to a customer, detailing charges for services provided during a specified period. It includes service descriptions, quantities, amounts, and payment instructions.",
+  "total_pages": 3,
+  "rules_used": "DOCUMENT VALIDATION RULES:\n\n- Must be a professional/official document\n- Text should be clearly readable\n- Document should not be completely blank or corrupted\n\nPass Criteria: If document appears to be a legitimate business/official document = PASS, otherwise FAIL",
+  "page_results": [
+    {
+      "extracted_data": {
+        "text_content": [
+          "CPB SOFTWARE (GERMANY) GMBH",
+          "Im Bruch 3, 63897 Miltenberg",
+          "Telefon: +49 9371 9786 0",
+          "germany@cpb-software.com",
+          "www.cpb-software.com",
+          "Musterkunde AG",
+          "Mr. John Doe",
+          "Musterstr. 23",
+          "12345 Musterstadt",
+          "Name: Stefanie Müller",
+          "Phone: +49 9371 9786-0",
+          "Invoice WMACCESS Internet",
+          "VAT No. DE199378386",
+          "Invoice No 123100401",
+          "Customer No 12345",
+          "Invoice Period 01.02.2024 - 29.02.2024",
+          "Date 1. März 2024",
+          "Service Description",
+          "Amount -without VAT-",
+          "quantity",
+          "Total Amount",
+          "Basic Fee wmView 130,00 € 1 130,00 €",
+          "Basis fee for additional user accounts 10,00 € 0 0,00 €",
+          "Basic Fee wmPos 50,00 € 0 0,00 €",
+          "Basic Fee wmGuide 1.000,00 € 0 0,00 €",
+          "Change of user accounts 10,00 € 0 0,00 €",
+          "Transaction Fee T1 0,58 € 14 8,12 €",
+          "Transaction Fee T2 0,70 € 0 0,00 €",
+          "Transaction Fee T3 1,50 € 162 243,00 €",
+          "Transaction Fee T4 0,50 € 0 0,00 €",
+          "Transaction Fee T5 0,50 € 0 0,00 €",
+          "Transaction Fee T6 0,80 € 0 0,00 €",
+          "Transaction Fee G1 1,80 € 0 0,00 €",
+          "Transaction Fee G2 0,30 € 0 0,00 €",
+          "Transaction Fee G3 0,30 € 0 0,00 €",
+          "Transaction Fee G4 0,40 € 0 0,00 €",
+          "Transaction Fee G5 0,30 € 0 0,00 €",
+          "Transaction Fee G6 0,30 € 0 0,00 €",
+          "Total 381,12 €",
+          "VAT 19 % 72,41 €",
+          "Gross Amount incl. VAT 453,53 €",
+          "Terms of Payment: Immediate payment without discount.",
+          "Any bank charges must be paid by the invoice recipient.",
+          "Bank fees at our expense will be charged to the invoice recipient!",
+          "Please credit the amount invoiced to IBAN DE29 1234 5678 9012 3456 78",
+          "BIC GENODE51MIC (SEPA Credit Transfer)",
+          "This invoice is generated automatically and will not be signed"
+        ],
+        "key_fields": {
+          "document_number": "123100401",
+          "date": "1. März 2024",
+          "company_name": "CPB SOFTWARE (GERMANY) GMBH",
+          "amounts": [
+            "130,00 €",
+            "8,12 €",
+            "243,00 €",
+            "381,12 €",
+            "72,41 €",
+            "453,53 €"
+          ],
+          "parties_involved": [
+            "Musterkunde AG",
+            "Mr. John Doe",
+            "Stefanie Müller"
+          ],
+          "signatures": "Not applicable",
+          "any_other_relevant_fields": {
+            "VAT_number": "DE199378386",
+            "customer_number": "12345",
+            "invoice_period": "01.02.2024 - 29.02.2024",
+            "payment_terms": "Immediate payment without discount",
+            "bank_details": "IBAN DE29 1234 5678 9012 3456 78, BIC GENODE51MIC"
+          }
+        },
+        "detected_elements": [
+          "tables",
+          "logos"
+        ]
+      },
+      "page_summary": "This page contains an invoice from CPB SOFTWARE (GERMANY) GMBH to Musterkunde AG, detailing services provided, amounts due, and payment instructions. It includes a table of service descriptions and fees, company contact information, and payment terms.",
+      "page_number": 1,
+      "image_file": "invoice_page_1.png"
+    },
+    {
+      "extracted_data": {
+        "text_content": [
+          "Invoice Details",
+          "Period: 01.02.2024 to 29.02.2024",
+          "Unit: Musterkunde AG",
+          "12345",
+          "Request sections: T1: T2: T3: T4: T5: T6: G1: G2: G3: G4: G5: G6:",
+          "Amount in Euro: 0.58 0.70 1.50 0.50 0.80 1.80 0.30 0.30 0.40 0.40 0.30 0.30",
+          "user-account-1 10 0 99 0 0 0 0 0 0 0 0 0 154.30 €",
+          "user-account-2 4 0 63 0 0 0 0 0 0 0 0 0 96.82 €",
+          "Transaction Fee Seg T1: T2: T3: T4: T5: T6: G1: G2: G3: G4: G5: G6:",
+          "Queries in Total: 14 0 162 0 0 0 0 0 0 0 0 0",
+          "Total in Euro: 8.12 € 0.00 € 243.00 € 0.00 € 0.00 € 0.00 € 0.00 € 0.00 € 0.00 € 0.00 € 0.00 € 0.00 € 251.12 €",
+          "The explanation of the query fee categories (T1 to T6 and G1 to G6) can be found on our website: https://www.wmaccess.com/abfragekategorien"
+        ],
+        "key_fields": {
+          "document_number": "12345",
+          "date": "01.02.2024 to 29.02.2024",
+          "company_name": "Musterkunde AG",
+          "amounts": [
+            "154.30 €",
+            "96.82 €",
+            "251.12 €"
+          ],
+          "parties_involved": [
+            "user-account-1",
+            "user-account-2"
+          ],
+          "signatures": null,
+          "any_other_relevant_fields": {
+            "query_fee_categories_url": "https://www.wmaccess.com/abfragekategorien"
+          }
+        },
+        "detected_elements": [
+          "tables",
+          "logos"
+        ]
+      },
+      "page_summary": "This page contains detailed invoice information for the period from 01.02.2024 to 29.02.2024, including transaction details for different user accounts, amounts in Euro, and a reference to query fee categories.",
+      "page_number": 2,
+      "image_file": "invoice_page_2.png"
+    },
+    {
+      "extracted_data": {
+        "text_content": [
+          "Invoice Details for wmView Query Reference",
+          "Period: 01.02.2024 to 29.02.2024",
+          "Unit: Musterkunde AG",
+          "12345",
+          "Query Reference:",
+          "*Not specified*",
+          "AZR/31/27439",
+          "CCL/3715",
+          "CRS/28432",
+          "Cs/52113",
+          "Gs 32090",
+          "Kpi/22695",
+          "PG/7772",
+          "Rjn/11138",
+          "SF-M 596/99-08",
+          "Trb/17885",
+          "WPN:24791",
+          "WW/15658",
+          "wmview, wmProfile and User Profiles Query Segments:",
+          "T1: T2: T3: T4: T5: T6:",
+          "Price for each Query in Euro:",
+          "0.58 0.70 1.50 0.50 0.80 1.80"
+        ],
+        "key_fields": {
+          "document_number": "12345",
+          "date": "01.02.2024 to 29.02.2024",
+          "company_name": "Musterkunde AG",
+          "amounts": [
+            "15.82 €",
+            "18.00 €",
+            "6.00 €",
+            "56.90 €",
+            "28.50 €",
+            "11.08 €",
+            "10.16 €",
+            "16.50 €",
+            "22.50 €",
+            "7.50 €",
+            "35.08 €",
+            "6.58 €",
+            "16.50 €"
+          ],
+          "parties_involved": [
+            "*Not specified*",
+            "AZR/31/27439",
+            "CCL/3715",
+            "CRS/28432",
+            "Cs/52113",
+            "Gs 32090",
+            "Kpi/22695",
+            "PG/7772",
+            "Rjn/11138",
+            "SF-M 596/99-08",
+            "Trb/17885",
+            "WPN:24791",
+            "WW/15658"
+          ],
+          "signatures": null,
+          "any_other_relevant_fields": null
+        },
+        "detected_elements": [
+          "tables",
+          "logos"
+        ]
+      },
+      "page_summary": "This page contains invoice details for wmView query references, including a list of query references, their corresponding segments, and prices. It also specifies the period and unit involved.",
+      "page_number": 3,
+      "image_file": "invoice_page_3.png"
+    }
+  ]
+}

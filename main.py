@@ -15,8 +15,8 @@ def main():
     Main entry point:
     1. Load validation rules
     2. Find all PDFs in input_pdfs/
-    3. Process each PDF: convert to images, classify, extract
-    4. Save reports to output/
+    3. Process each PDF: classify document, extract page data
+    4. Save reports organized by document type in output/
     """
     
     # Setup directories
@@ -52,17 +52,15 @@ def main():
     
     for pdf_path in pdf_files:
         try:
-            # Create subfolder for this PDF's images
-            pdf_images_dir = temp_images_dir / pdf_path.stem
-            
             report = process_pdf(
                 pdf_path=pdf_path,
                 rules_text=rules_text,
-                output_dir=output_dir,
-                temp_images_dir=pdf_images_dir
+                base_output_dir=output_dir,  
+                temp_images_dir=temp_images_dir
             )
             
-            all_reports.append(report)
+            if report:
+                all_reports.append(report)
             
         except Exception as e:
             logger.error(f"Failed to process {pdf_path.name}: {e}")
@@ -73,7 +71,7 @@ def main():
     logger.info("BATCH PROCESSING COMPLETE")
     logger.info("="*60)
     logger.info(f"Total PDFs processed: {len(all_reports)}")
-    logger.info(f"Reports saved in: {output_dir}")
+    logger.info(f"Reports organized by type in: {output_dir}")
     logger.info(f"Page images saved in: {temp_images_dir}")
     logger.info("="*60)
 
