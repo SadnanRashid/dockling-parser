@@ -11,7 +11,7 @@ uv init
 **Install Dependencies:**
 
 ```bash   
-uv add langchain langchain-openai python-dotenv 
+uv add langchain langchain-openai langchain-core python-dotenv pymupdf pillow
 ```
 
 **Execution:**
