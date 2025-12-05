@@ -1,23 +1,28 @@
-# parser.py
 import logging
 import os
 import re
 import shutil
 import urllib.parse
+import warnings
 from pathlib import Path
 
+import pandas as pd
+import pdfplumber
 from docling_core.types.doc import ImageRefMode, PictureItem, TableItem
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
-INPUT_PDF = Path("demo.pdf")
-OUT_DIR = Path("demo3")
+warnings.filterwarnings("ignore", category=UserWarning)
+
+INPUT_PDF = Path("imagetable.pdf")
+OUT_DIR = Path("demo4")
 
 # Subfolders for different types of images
 PAGES_SUBFOLDER = "pages"
 FIGURES_SUBFOLDER = "figures"
 TABLES_SUBFOLDER = "tables"
+CSV_SUBFOLDER = "extracted_csv"
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_RESOLUTION_SCALE = 2.0
@@ -25,9 +30,7 @@ IMAGE_RESOLUTION_SCALE = 2.0
 logger = logging.getLogger("parser")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# -------------------------------------------------------------
-# GLOBAL CACHE TO PREVENT IMAGE DUPLICATION
-# -------------------------------------------------------------
+
 copied_images_cache = {}  # key = absolute path → value = rel path inside images folder
 
 
@@ -139,6 +142,118 @@ def _fix_markdown_image_refs(md_path: Path, out_dir: Path):
     return md_path
 
 
+def extract_tables_with_pdfplumber(pdf_path: Path, csv_dir: Path) -> list:
+    """
+    Extract tables from PDF using pdfplumber and save as CSV files.
+    Returns list of CSV file paths.
+    """
+    csv_files = []
+    logger.info("extracting tables with pdfplumber from %s", pdf_path.name)
+    
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_num, page in enumerate(pdf.pages, start=1):
+            tables = page.extract_tables()
+            for idx, table in enumerate(tables, start=1):
+                if table:  # Only process non-empty tables
+                    csv_filename = f"table_page{page_num}_{idx}.csv"
+                    csv_path = csv_dir / csv_filename
+                    
+                    # Convert to DataFrame and save
+                    df = pd.DataFrame(table)
+                    df.to_csv(csv_path, index=False, header=False)
+                    
+                    csv_files.append(csv_path)
+                    logger.info("extracted table from page %d (table %d)", page_num, idx)
+    
+    logger.info("total tables extracted: %d", len(csv_files))
+    return csv_files
+
+
+def csv_to_html_table(csv_path: Path) -> str:
+    """Convert CSV file to HTML table string."""
+    df = pd.read_csv(csv_path, header=None)
+    
+    html = '<table border="1" style="border-collapse: collapse; margin: 20px 0;">\n'
+    
+    # Add rows
+    for _, row in df.iterrows():
+        html += '  <tr>\n'
+        for cell in row:
+            html += f'    <td style="padding: 8px;">{cell}</td>\n'
+        html += '  </tr>\n'
+    
+    html += '</table>\n'
+    return html
+
+
+def csv_to_markdown_table(csv_path: Path) -> str:
+    """Convert CSV file to Markdown table string."""
+    df = pd.read_csv(csv_path, header=None)
+    
+    if df.empty:
+        return ""
+    
+    # Build markdown table
+    lines = []
+    
+    # First row
+    lines.append("| " + " | ".join(str(cell) for cell in df.iloc[0]) + " |")
+    
+    # Separator
+    lines.append("| " + " | ".join(["---"] * len(df.columns)) + " |")
+    
+    # Remaining rows
+    for _, row in df.iloc[1:].iterrows():
+        lines.append("| " + " | ".join(str(cell) for cell in row) + " |")
+    
+    return "\n".join(lines) + "\n\n"
+
+
+def append_csv_tables_to_html(html_path: Path, csv_files: list):
+    """Append CSV tables to the end of HTML file."""
+    html = html_path.read_text(encoding="utf-8")
+    
+    # Find the closing body tag or append at end
+    if "</body>" in html:
+        insert_pos = html.rfind("</body>")
+    else:
+        insert_pos = len(html)
+    
+    # Build tables section
+    tables_html = '\n<hr>\n<h2>Extracted Tables (CSV)</h2>\n'
+    
+    for csv_path in csv_files:
+        rel_path = os.path.relpath(csv_path, start=html_path.parent).replace("\\", "/")
+        tables_html += f'<h3>{csv_path.name}</h3>\n'
+        tables_html += f'<p><a href="{rel_path}">Download CSV</a></p>\n'
+        tables_html += csv_to_html_table(csv_path)
+        tables_html += '\n'
+    
+    # Insert before closing body tag or at end
+    new_html = html[:insert_pos] + tables_html + html[insert_pos:]
+    html_path.write_text(new_html, encoding="utf-8")
+    logger.info("appended %d CSV tables to HTML", len(csv_files))
+
+
+def append_csv_tables_to_markdown(md_path: Path, csv_files: list):
+    """Append CSV tables to the end of Markdown file."""
+    md_content = md_path.read_text(encoding="utf-8")
+    
+    # Build tables section
+    tables_md = '\n---\n\n## Extracted Tables (CSV)\n\n'
+    
+    for csv_path in csv_files:
+        rel_path = os.path.relpath(csv_path, start=md_path.parent).replace("\\", "/")
+        tables_md += f'### {csv_path.name}\n\n'
+        tables_md += f'[Download CSV]({rel_path})\n\n'
+        tables_md += csv_to_markdown_table(csv_path)
+    
+    # Append to end
+    new_md = md_content + tables_md
+    md_path.write_text(new_md, encoding="utf-8")
+    logger.info("appended %d CSV tables to Markdown", len(csv_files))
+
+
 def main():
     logger.info("starting parser")
     if not INPUT_PDF.exists():
@@ -149,6 +264,7 @@ def main():
     pages_dir = _ensure_images_dir(OUT_DIR, PAGES_SUBFOLDER)
     figures_dir = _ensure_images_dir(OUT_DIR, FIGURES_SUBFOLDER)
     tables_dir = _ensure_images_dir(OUT_DIR, TABLES_SUBFOLDER)
+    csv_dir = _ensure_images_dir(OUT_DIR, CSV_SUBFOLDER)
 
     pdf_opts = PdfPipelineOptions()
     pdf_opts.images_scale = IMAGE_RESOLUTION_SCALE
@@ -213,11 +329,17 @@ def main():
     _fix_html_image_refs(html_refs, OUT_DIR)
     _fix_markdown_image_refs(md_refs, OUT_DIR)
 
+    # Extract tables with pdfplumber and save as CSV
+    csv_files = extract_tables_with_pdfplumber(INPUT_PDF, csv_dir)
+
+    # Append CSV tables to HTML and Markdown
+    if csv_files:
+        append_csv_tables_to_html(html_refs, csv_files)
+        append_csv_tables_to_markdown(md_refs, csv_files)
+        logger.info("CSV tables appended to outputs")
+
     logger.info("done. open %s in a browser to verify", html_refs)
 
 
 if __name__ == "__main__":
     main()
-
-
-
