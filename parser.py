@@ -22,6 +22,7 @@ PAGES_SUBFOLDER = "pages"
 FIGURES_SUBFOLDER = "figures"
 TABLES_SUBFOLDER = "tables"
 CSV_SUBFOLDER = "extracted_csv"  
+CONF_REPORT = f"{OUT_DIR}/confidence_report.txt"
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_RESOLUTION_SCALE = 2.0
@@ -155,6 +156,59 @@ def main():
 
     logger.info("converting %s ...", INPUT_PDF.name)
     conv_res = converter.convert(INPUT_PDF)
+
+    #confidence
+    conf = conv_res.confidence
+
+    logger.info("=== DOCUMENT-LEVEL CONFIDENCE ===")
+    logger.info("Mean Grade: %s", conf.mean_grade)
+    logger.info("Low Grade: %s", conf.low_grade)
+
+    logger.info("Mean Score: %.3f", conf.mean_score)
+    logger.info("Low Score: %.3f", conf.low_score)
+
+    logger.info("--- Component Scores ---")
+    logger.info("Layout: %.3f", conf.layout_score)
+    logger.info("OCR: %.3f", conf.ocr_score)
+    # logger.info("Parse: %.3f", conf.parse_score)
+    # logger.info("Table: %.3f", conf.table_score)
+    logger.info("=== PAGE-LEVEL CONFIDENCE SCORES ===")
+    for page_no, p in conf.pages.items():
+        logger.info("Page %d:", page_no)
+        # logger.info("  Parse Score: %.3f", p.parse_score)
+        logger.info("  Layout Score: %.3f", p.layout_score)
+        logger.info("  OCR Score: %.3f", p.ocr_score)
+        # logger.info("  Table Score: %.3f", p.table_score)
+        # Page-level mean + low scores
+        logger.info("  Mean Score: %.3f", p.mean_score)
+        logger.info("  Low Score: %.3f", p.low_score)
+    ##############
+
+    with open(CONF_REPORT, "w", encoding="utf-8") as f:
+        f.write("=== DOCUMENT-LEVEL CONFIDENCE ===\n")
+        f.write(f"Mean Grade: {conf.mean_grade}\n")
+        f.write(f"Low Grade: {conf.low_grade}\n\n")
+
+        f.write(f"Mean Score: {conf.mean_score:.3f}\n")
+        f.write(f"Low Score: {conf.low_score:.3f}\n\n")
+
+        f.write("--- Component Scores ---\n")
+        f.write(f"Layout: {conf.layout_score:.3f}\n")
+        f.write(f"OCR: {conf.ocr_score:.3f}\n")
+        # f.write(f"Parse: {conf.parse_score}\n")
+        # f.write(f"Table: {conf.table_score}\n")
+
+        f.write("\n=== PAGE-LEVEL CONFIDENCE SCORES ===\n")
+        for page_no, p in conf.pages.items():
+            f.write(f"\nPage {page_no}:\n")
+            # f.write(f"  Parse Score: {p.parse_score}\n")
+            f.write(f"  Layout Score: {p.layout_score:.3f}\n")
+            f.write(f"  OCR Score: {p.ocr_score:.3f}\n")
+            # f.write(f"  Table Score: {p.table_score}\n")
+            f.write(f"  Mean Score: {p.mean_score:.3f}\n")
+            f.write(f"  Low Score: {p.low_score:.3f}\n")
+
+    ########
     doc = conv_res.document
     logger.info("conversion done. pages=%d", len(doc.pages))
 
