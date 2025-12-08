@@ -1,23 +1,27 @@
-# parser.py
 import logging
 import os
 import re
 import shutil
 import urllib.parse
+import warnings
 from pathlib import Path
 
+import pandas as pd
 from docling_core.types.doc import ImageRefMode, PictureItem, TableItem
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
-INPUT_PDF = Path("demo.pdf")
-OUT_DIR = Path("demo3")
+warnings.filterwarnings("ignore", category=UserWarning)
 
-# Subfolders for different types of images
+INPUT_PDF = Path("Semester-VII.pdf")
+OUT_DIR = Path("Semester-VII")
+
+# Subfolders
 PAGES_SUBFOLDER = "pages"
 FIGURES_SUBFOLDER = "figures"
 TABLES_SUBFOLDER = "tables"
+CSV_SUBFOLDER = "extracted_csv"  
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 IMAGE_RESOLUTION_SCALE = 2.0
@@ -25,10 +29,7 @@ IMAGE_RESOLUTION_SCALE = 2.0
 logger = logging.getLogger("parser")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# -------------------------------------------------------------
-# GLOBAL CACHE TO PREVENT IMAGE DUPLICATION
-# -------------------------------------------------------------
-copied_images_cache = {}  # key = absolute path → value = rel path inside images folder
+copied_images_cache = {}
 
 
 def _ensure_images_dir(out_dir: Path, subfolder: str) -> Path:
@@ -38,16 +39,10 @@ def _ensure_images_dir(out_dir: Path, subfolder: str) -> Path:
 
 
 def _copy_into_images(found: Path, out_dir: Path, images_dir: Path) -> str:
-    """
-    Copy file once. If already copied earlier, reuse path from cache.
-    """
     fpath = found.resolve()
-
-    # CACHE HIT → already copied
     if fpath in copied_images_cache:
         return copied_images_cache[fpath]
 
-    # First-time copy
     dest = images_dir / found.name
     i = 1
     while dest.exists():
@@ -67,10 +62,8 @@ def _fix_html_image_refs(html_path: Path, out_dir: Path):
 
     def repl(m):
         orig = m.group(2)
-
         if orig.startswith(("data:", "http://", "https://")):
             return m.group(0)
-
         decoded = orig.replace("\\", "/")
         candidates = [Path(decoded), out_dir / decoded, Path.cwd() / decoded]
 
@@ -139,16 +132,18 @@ def _fix_markdown_image_refs(md_path: Path, out_dir: Path):
     return md_path
 
 
+# ---------- MAIN ----------
+
 def main():
     logger.info("starting parser")
     if not INPUT_PDF.exists():
         logger.error("input PDF not found: %s", INPUT_PDF.resolve())
         return
 
-    # Create separate folders
     pages_dir = _ensure_images_dir(OUT_DIR, PAGES_SUBFOLDER)
     figures_dir = _ensure_images_dir(OUT_DIR, FIGURES_SUBFOLDER)
     tables_dir = _ensure_images_dir(OUT_DIR, TABLES_SUBFOLDER)
+    csv_dir = _ensure_images_dir(OUT_DIR, CSV_SUBFOLDER)
 
     pdf_opts = PdfPipelineOptions()
     pdf_opts.images_scale = IMAGE_RESOLUTION_SCALE
@@ -168,7 +163,7 @@ def main():
     tables = [el for el, _ in items if isinstance(el, TableItem)]
     logger.info("layout items=%d pictures=%d tables=%d", len(items), len(pictures), len(tables))
 
-    # Save page images
+    # Save pages
     saved_pages = 0
     for page_no, page in doc.pages.items():
         if getattr(page, "image", None) is not None:
@@ -178,7 +173,7 @@ def main():
             saved_pages += 1
     logger.info("saved %d page images", saved_pages)
 
-    # Save pictures and tables separately
+    # Save pictures and tables
     pic_c = 0
     tab_c = 0
     for el, _ in items:
@@ -200,24 +195,30 @@ def main():
 
     logger.info("saved %d pictures and %d tables", pic_c, tab_c)
 
-    # Export markdown and HTML
-    md_embedded = OUT_DIR / f"{INPUT_PDF.stem}-with-images-embedded.md"
+    # Save Docling tables as CSV
+    docling_csv_count = 0
+    for table_ix, table in enumerate(tables, start=1):
+        try:
+            df = table.export_to_dataframe(doc)
+            csv_path = csv_dir / f"{INPUT_PDF.stem}-docling-table-{table_ix}.csv"
+            df.to_csv(csv_path, index=False)
+            docling_csv_count += 1
+            logger.info("saved Docling CSV table: %s", csv_path.name)
+        except Exception as e:
+            logger.error("error exporting Docling table %d: %s", table_ix, e)
+
+    # Export markdown + html
     md_refs = OUT_DIR / f"{INPUT_PDF.stem}-with-image-refs.md"
     html_refs = OUT_DIR / f"{INPUT_PDF.stem}-with-image-refs.html"
 
-    doc.save_as_markdown(md_embedded, image_mode=ImageRefMode.EMBEDDED)
     doc.save_as_markdown(md_refs, image_mode=ImageRefMode.REFERENCED)
     doc.save_as_html(html_refs, image_mode=ImageRefMode.REFERENCED)
 
-    # Fix references
-    _fix_html_image_refs(html_refs, OUT_DIR)
     _fix_markdown_image_refs(md_refs, OUT_DIR)
+    _fix_html_image_refs(html_refs, OUT_DIR)
 
     logger.info("done. open %s in a browser to verify", html_refs)
 
 
 if __name__ == "__main__":
     main()
-
-
-

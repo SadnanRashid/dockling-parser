@@ -15,8 +15,8 @@ from docling.document_converter import DocumentConverter, PdfFormatOption
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
-INPUT_PDF = Path("imagetable.pdf")
-OUT_DIR = Path("demo4")
+INPUT_PDF = Path("Semester-VII.pdf")
+OUT_DIR = Path("Semester-VII")
 
 # Subfolders for different types of images
 PAGES_SUBFOLDER = "pages"
@@ -315,6 +315,18 @@ def main():
                 copied_images_cache[dest.resolve()] = f"{TABLES_SUBFOLDER}/{dest.name}"
 
     logger.info("saved %d pictures and %d tables", pic_c, tab_c)
+    
+        # Also export Docling-detected tables to CSV
+    docling_csv_count = 0
+    for table_ix, table in enumerate(tables, start=1):
+        try:
+            df = table.export_to_dataframe(doc)
+            csv_path = csv_dir / f"{INPUT_PDF.stem}-docling-table-{table_ix}.csv"
+            df.to_csv(csv_path, index=False)
+            docling_csv_count += 1
+            logger.info("saved Docling CSV table: %s", csv_path.name)
+        except Exception as e:
+            logger.error("error exporting Docling table %d: %s", table_ix, e)
 
     # Export markdown and HTML
     md_embedded = OUT_DIR / f"{INPUT_PDF.stem}-with-images-embedded.md"
