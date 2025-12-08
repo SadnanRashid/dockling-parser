@@ -5,7 +5,7 @@ import re
 import shutil
 import urllib.parse
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Set
 
 from docling_core.types.doc import ImageRefMode, PictureItem, TableItem
 from docling.datamodel.base_models import InputFormat
@@ -116,7 +116,6 @@ def _fix_markdown_image_refs(md_path: Path, out_dir: Path, images_subfolder: str
     return md_path
 
 
-# helpers for bbox and IOU
 def _get_bbox(el) -> Optional[Tuple[float, float, float, float]]:
     bbox = getattr(el, "bbox", None)
     if bbox is not None:
@@ -126,14 +125,12 @@ def _get_bbox(el) -> Optional[Tuple[float, float, float, float]]:
         h = getattr(bbox, "h", None) or getattr(bbox, "height", None)
         if None not in (x, y, w, h):
             return (x, y, x + w, y + h)
-        # try right/bottom form
         left = getattr(bbox, "left", None)
         top = getattr(bbox, "top", None)
         right = getattr(bbox, "right", None)
         bottom = getattr(bbox, "bottom", None)
         if None not in (left, top, right, bottom):
             return (left, top, right, bottom)
-    # fallback: direct attributes on element
     x = getattr(el, "x", None) or getattr(el, "left", None)
     y = getattr(el, "y", None) or getattr(el, "top", None)
     w = getattr(el, "w", None) or getattr(el, "width", None)
@@ -161,6 +158,37 @@ def _iou(a: Tuple[float, float, float, float], b: Tuple[float, float, float, flo
     return inter / union
 
 
+def _remove_table_image_refs_from_html(html_path: Path, table_basenames: Set[str]) -> None:
+    text = html_path.read_text(encoding="utf-8")
+    # remove <figure>..</figure> if it contains an <img src="...basename...">
+    def figure_filter(match):
+        block = match.group(0)
+        for name in table_basenames:
+            if name in block:
+                return ""  # drop the whole figure
+        return block
+
+    fixed = re.sub(r"<figure.*?>.*?</figure>", figure_filter, text, flags=re.DOTALL | re.IGNORECASE)
+    # also remove standalone <img ...> tags referencing table images
+    for name in table_basenames:
+        fixed = re.sub(rf'<img[^>]*{re.escape(name)}[^>]*>', '', fixed)
+    html_path.write_text(fixed, encoding="utf-8")
+
+
+def _remove_table_image_refs_from_md(md_path: Path, table_basenames: Set[str]) -> None:
+    text = md_path.read_text(encoding="utf-8")
+    # remove markdown image references that point to a table image
+    def md_filter(match):
+        url = match.group(2)
+        decoded = urllib.parse.unquote(url).replace("\\", "/")
+        if Path(decoded).name in table_basenames:
+            return ""  # drop image token
+        return match.group(0)
+
+    fixed = re.sub(r'!\[([^\]]*)\]\((.*?)\)', md_filter, text)
+    md_path.write_text(fixed, encoding="utf-8")
+
+
 def main():
     logger.info("starting parser")
     if not INPUT_PDF.exists():
@@ -185,7 +213,6 @@ def main():
     pictures = [el for el, _ in items if isinstance(el, PictureItem)]
     logger.info("layout items=%d pictures=%d tables=%d", len(items), len(pictures), len(tables))
 
-    # save page images
     saved_pages = 0
     for page_no, page in doc.pages.items():
         if getattr(page, "image", None) is not None:
@@ -195,65 +222,58 @@ def main():
             logger.info("saved page image: %s", out_page)
     logger.info("saved %d page images", saved_pages)
 
-    # prepare table bboxes
     table_bboxes = []
-    for tbl in tables:
+    table_image_paths = []
+    for idx, tbl in enumerate(tables, start=1):
         tb = _get_bbox(tbl)
         if tb is not None:
             table_bboxes.append(tb)
+        out_table = OUT_DIR / f"{INPUT_PDF.stem}-table-{idx}.png"
+        img = tbl.get_image(doc)
+        if img is not None:
+            img.save(out_table, format="PNG")
+            table_image_paths.append(out_table)
+            logger.info("saved table image: %s", out_table)
 
     images_dir = _ensure_images_dir(OUT_DIR, IMAGES_SUBFOLDER)
-
-    # parameters
     IOU_THRESHOLD = 0.30
     OVERLAP_AREA_RATIO = 0.5
-    MIN_PIC_AREA_TO_CHECK = 200  # skip tiny images
+    MIN_PIC_AREA_TO_CHECK = 200
 
-    pic_c = 0
-    tab_c = 0
-    saved_pic_count = 0
-    saved_tab_count = 0
+    pic_count = 0
+    saved_pic_paths = []
 
-    # iterate and save; skip picture crops that significantly overlap tables
-    for el, _ in items:
-        if isinstance(el, TableItem):
-            tab_c += 1
-            out_table = OUT_DIR / f"{INPUT_PDF.stem}-table-{tab_c}.png"
-            img = el.get_image(doc)
-            if img is not None:
-                img.save(out_table, format="PNG")
-                saved_tab_count += 1
-                logger.info("saved table image: %s", out_table)
-        elif isinstance(el, PictureItem):
-            pb = _get_bbox(el)
-            save_picture = True
-            if pb is not None:
-                pic_area = max(0.0, (pb[2] - pb[0])) * max(0.0, (pb[3] - pb[1]))
-                if pic_area >= MIN_PIC_AREA_TO_CHECK and table_bboxes:
-                    for tb in table_bboxes:
-                        iou_val = _iou(pb, tb)
-                        if iou_val >= IOU_THRESHOLD:
-                            # compute intersection area
-                            ix1 = max(pb[0], tb[0])
-                            iy1 = max(pb[1], tb[1])
-                            ix2 = min(pb[2], tb[2])
-                            iy2 = min(pb[3], tb[3])
-                            if ix1 < ix2 and iy1 < iy2:
-                                inter_area = (ix2 - ix1) * (iy2 - iy1)
-                                if (inter_area / float(pic_area)) >= OVERLAP_AREA_RATIO:
-                                    save_picture = False
-                                    break
-            if not save_picture:
-                continue
-            pic_c += 1
-            out_pic = images_dir / f"{INPUT_PDF.stem}-picture-{pic_c}.png"
-            img = el.get_image(doc)
-            if img is not None:
-                img.save(out_pic, format="PNG")
-                saved_pic_count += 1
-                logger.info("saved picture image: %s", out_pic)
+    for idx, (el, _ctx) in enumerate(items, start=1):
+        if not isinstance(el, PictureItem):
+            continue
+        pb = _get_bbox(el)
+        save_picture = True
+        if pb is not None:
+            pic_area = max(0.0, (pb[2] - pb[0])) * max(0.0, (pb[3] - pb[1]))
+            if pic_area >= MIN_PIC_AREA_TO_CHECK and table_bboxes:
+                for tb in table_bboxes:
+                    iou_val = _iou(pb, tb)
+                    if iou_val >= IOU_THRESHOLD:
+                        ix1 = max(pb[0], tb[0])
+                        iy1 = max(pb[1], tb[1])
+                        ix2 = min(pb[2], tb[2])
+                        iy2 = min(pb[3], tb[3])
+                        if ix1 < ix2 and iy1 < iy2:
+                            inter_area = (ix2 - ix1) * (iy2 - iy1)
+                            if (inter_area / float(pic_area)) >= OVERLAP_AREA_RATIO:
+                                save_picture = False
+                                break
+        if not save_picture:
+            continue
+        pic_count += 1
+        out_pic = images_dir / f"{INPUT_PDF.stem}-picture-{pic_count}.png"
+        img = el.get_image(doc)
+        if img is not None:
+            img.save(out_pic, format="PNG")
+            saved_pic_paths.append(out_pic)
+            logger.info("saved picture image: %s", out_pic)
 
-    logger.info("saved %d pictures and %d tables", saved_pic_count, saved_tab_count)
+    logger.info("saved %d pictures", len(saved_pic_paths))
 
     md_embedded = OUT_DIR / f"{INPUT_PDF.stem}-with-images-embedded.md"
     md_refs = OUT_DIR / f"{INPUT_PDF.stem}-with-image-refs.md"
@@ -268,6 +288,14 @@ def main():
     doc.save_as_html(html_refs, image_mode=ImageRefMode.REFERENCED)
     logger.info("saved html refs: %s", html_refs)
 
+    # remove references to images that correspond to table crops
+    table_basenames = {p.name for p in table_image_paths}
+    if table_basenames:
+        logger.info("removing table image references from outputs")
+        _remove_table_image_refs_from_html(html_refs, table_basenames)
+        _remove_table_image_refs_from_md(md_refs, table_basenames)
+
+    # normalize remaining image references and copy assets into images/
     logger.info("fixing html image refs")
     _fix_html_image_refs(html_refs, OUT_DIR, IMAGES_SUBFOLDER)
     logger.info("fixing markdown image refs")
