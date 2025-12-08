@@ -11,11 +11,12 @@ from docling_core.types.doc import ImageRefMode, PictureItem, TableItem
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.datamodel.pipeline_options import TableFormerMode
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
-INPUT_PDF = Path("Semester-VII.pdf")
-OUT_DIR = Path("Semester-VII")
+INPUT_PDF = Path("Sample-Fillable-PDF-filled.pdf")
+OUT_DIR = Path("Sample-Fillable-PDF-filled")
 
 # Subfolders
 PAGES_SUBFOLDER = "pages"
@@ -150,6 +151,12 @@ def main():
     pdf_opts.images_scale = IMAGE_RESOLUTION_SCALE
     pdf_opts.generate_page_images = True
     pdf_opts.generate_picture_images = True
+
+    #####
+    pdf_opts.do_table_structure=True
+    pdf_opts.do_ocr=True
+    pdf_opts.table_structure_options.mode = TableFormerMode.ACCURATE  
+    #####   
 
     format_options = {InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_opts)}
     converter = DocumentConverter(format_options=format_options)

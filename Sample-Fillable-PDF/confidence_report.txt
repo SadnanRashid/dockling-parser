@@ -1,0 +1,18 @@
+=== DOCUMENT-LEVEL CONFIDENCE ===
+Mean Grade: QualityGrade.GOOD
+Low Grade: QualityGrade.FAIR
+
+Mean Score: 0.884
+Low Score: 0.779
+
+--- Component Scores ---
+Layout: 0.768
+OCR: nan
+
+=== PAGE-LEVEL CONFIDENCE SCORES ===
+
+Page 0:
+  Layout Score: 0.768
+  OCR Score: nan
+  Mean Score: 0.884
+  Low Score: 0.779

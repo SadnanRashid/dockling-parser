@@ -10,13 +10,14 @@ import pandas as pd
 import pdfplumber
 from docling_core.types.doc import ImageRefMode, PictureItem, TableItem
 from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import PdfPipelineOptions
+# NOTE: The next line is updated in your provided code, keeping it as is now
+from docling.datamodel.pipeline_options import PdfPipelineOptions, EasyOcrOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
-INPUT_PDF = Path("Semester-VII.pdf")
-OUT_DIR = Path("Semester-VII")
+INPUT_PDF = Path("Capture.pdf")
+OUT_DIR = Path("Capture")
 
 # Subfolders for different types of images
 PAGES_SUBFOLDER = "pages"
@@ -177,10 +178,10 @@ def csv_to_html_table(csv_path: Path) -> str:
     
     # Add rows
     for _, row in df.iterrows():
-        html += '  <tr>\n'
+        html += ' 	<tr>\n'
         for cell in row:
-            html += f'    <td style="padding: 8px;">{cell}</td>\n'
-        html += '  </tr>\n'
+            html += f' 	 	<td style="padding: 8px;">{cell}</td>\n'
+        html += ' 	</tr>\n'
     
     html += '</table>\n'
     return html
@@ -254,6 +255,37 @@ def append_csv_tables_to_markdown(md_path: Path, csv_files: list):
     logger.info("appended %d CSV tables to Markdown", len(csv_files))
 
 
+# --- NEW FUNCTION TO EXTRACT FORM FIELDS (THE FIX) ---
+def extract_form_fields_with_pdfplumber(pdf_path: Path):
+    """
+    Extracts form field key-value pairs from the AcroForm data layer.
+    """
+    form_data = {}
+    logger.info("attempting to extract AcroForm fields with pdfplumber...")
+
+    try:
+        with pdfplumber.open(pdf_path) as pdf:
+            # Iterate through all pages to capture fields
+            for page_num, page in enumerate(pdf.pages, start=1):
+                fields = page.form_fields
+
+                if fields:
+                    logger.info("found %d form fields on page %d", len(fields), page_num)
+                    for field in fields:
+                        field_name = field.get("field_name")
+                        field_value = field.get("value")
+                        # Only include fields with a name and a value
+                        if field_name and field_value:
+                            form_data[field_name] = field_value
+                
+    except Exception as e:
+        logger.error("error during pdfplumber form field extraction: %s", e)
+        return None
+
+    return form_data
+# ---------------------------------------------------
+
+
 def main():
     logger.info("starting parser")
     if not INPUT_PDF.exists():
@@ -271,6 +303,11 @@ def main():
     pdf_opts.generate_page_images = True
     pdf_opts.generate_picture_images = True
 
+    # RE-APPLYING OCR configuration for completeness (for images/screenshots)
+    pdf_opts.do_ocr = True 
+    pdf_opts.do_table_structure = True 
+    pdf_opts.ocr_options = EasyOcrOptions(force_full_page_ocr=True)
+    
     format_options = {InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_opts)}
     converter = DocumentConverter(format_options=format_options)
 
@@ -278,6 +315,19 @@ def main():
     conv_res = converter.convert(INPUT_PDF)
     doc = conv_res.document
     logger.info("conversion done. pages=%d", len(doc.pages))
+
+    # --- CALL NEW FUNCTION FOR FORM FIELDS ---
+    extracted_form_fields = extract_form_fields_with_pdfplumber(INPUT_PDF)
+    
+    if extracted_form_fields:
+        logger.info("--- Extracted AcroForm Data (from pdfplumber) ---")
+        for k, v in extracted_form_fields.items():
+            # This logs the specific data you were missing
+            logger.info("FIELD: '%s', VALUE: '%s'", k, v)
+        logger.info("-------------------------------------------------")
+    else:
+        logger.info("No AcroForm fields found by pdfplumber.")
+    # ----------------------------------------
 
     items = list(doc.iterate_items())
     pictures = [el for el, _ in items if isinstance(el, PictureItem)]
@@ -316,7 +366,7 @@ def main():
 
     logger.info("saved %d pictures and %d tables", pic_c, tab_c)
     
-        # Also export Docling-detected tables to CSV
+    # Also export Docling-detected tables to CSV
     docling_csv_count = 0
     for table_ix, table in enumerate(tables, start=1):
         try:
